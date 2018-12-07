@@ -1,0 +1,94 @@
+- EXACT PREDICTION INTERVALS
+  - remplacer nlminb par uniroot
+  - virer le n qui ne sert à rien
+  - virer les vecteurs qui sont des scalaires !
+  - method mvtnorm::pmt au lieu de la double intégrale
+
+- les exe marchent en 32 bits ? YES
+- les compresser : DONE
+
+- benchmark: hreadXLSX plus long en json qu'en flatlist !!! (peut-être le storage de la longue chaîne ?)
+
+- passer à handsontable 31 et changer getComment
+- faire aussi type mynumeric DONE
+
+- DONE sheetToJSON: le faire "standalone" comme avant, avec scalarize direct
+
+- tolerance factors
+- anova tolerance intervals
+
+
+PACKAGES:
+
+- plutôt que makeRepo(repopath, name), fais makeRepo(repo) avec repo nommé !!
+- tu peux mettre name optionnel
+- si repo pas nommé et qu'il s'appelle "CRANlike-ABC" alors name "ABC" par défaut
+- addPackage a bogué avec dir2json à cause de rJava
+  - pas de pb avec writeAndArchive car ne crée pas le zip
+  - tu peux aussi faire multiarch=FALSE dans addPackage !
+- repoStatus ne va pas chercher les archivés !
+  - c'est quand tu fais writeAndArchive ?
+  - DONE (recursive = TRUE)
+- ne pas créer Meta et Archive pour win
+- addPackage ou writeAndArchive ne marche pas avec path //networkdrive/..
+- mettre la "réf" du repo dans SL.name
+
+SHINY RESHAPE:
+- rouge moins vif pour invalid
+- DONE (c'était parce que dfcomments déjà une liste) Le "import comments" ne marche plus (handsontable 31 ?)
+
+- la handsontable craint quand les headers ne sont pas distincts : FIX in xlsx2json, NOT in treadXLSX
+
+- DONE tab Session Info
+
+- TODO si je fais "set this row as headers", ne suis-je pas à nouveau embêté par le trim, etc., s'il y a ces caractères dans cette ligne ?
+
+- LOGO gsk
+
+- icon "this column can be safely converted to numeric" (si c'est possible de virer cet icon après switch)
+
+- DONE (reset dimensions) problem "Show row headers" after "Set this row as headers"
+
+- DONE Set height after "Set this row as headers"
+
+- DONE change type in contextmenu
+
+- DONE plutôt que modif numeric, ajouter un mynumeric dans validateChanges
+
+
+MODIFS HANDSONTABLE:
+line 5354: test numeric
+NumericRenderer : remove format
+NumericValidator: remove comma in regexp
+FINALEMENT only modif line 5354 et tu peux faire
+  Handsontable.cellTypes.numeric.renderer = mynumericRenderer, etc...
+ou alors ne rien modifier et faire cellProperties.type = "numeric" dans le renderer ? => ça va quand même merder dans validatechanges (line 5354)
+
+- pour upload xlsx startRow:
+  upload tout et slice le dataframe - oui mais header ?..
+  plus simple de faire un filterWithKey dans Haskell (dans cleanCellMap)
+  "infini" entier : maxBound::Int
+- startCol:
+  suffit de slice colHeaders (?) non ! -> suffit de slice columns
+
+
+- shiny: class "mynumeric" when no upload
+  - why right-justified when invalid?
+
+- DONE pivoted tables: ajouter une méthode .invalid() qui retourne les cellules rouges plutôt que de mettre du html dans la cellule
+  out.invalid = function()... -> retourne [[1,2], [2,2], ...]
+  - une méthode .rowheaders() ?
+  - et utiliser datatables
+  http://stackoverflow.com/questions/32894735/datatables-how-do-i-change-background-and-text-color-of-a-cell-changed-dynamic
+
+- pivot ne marche pas quand il y a des quotes dans column name (undefined => il ne trouve pas la clé)
+non en fait il y a deux espaces dans la clé et select2 réduit à 1 espace!
+=> DONE; to be tested: trim works?
+
+- Walter:
+1)	Define header row(s), allowing concatenated headers from multiple rows.
+2) DONE	Clear log (“audit trail”) whenever a new sheet is uploaded.
+3)	Also log activities such as sorting.
+4)	Allow download of an R-script which has exactly the same effect as the steps performed by the user.
+5) DONE	When saving via right-mouse click in the top table I would include tab-separated txt.
+6) DONE	LIkewise, the action under the save button on the bottom (currently txt only) should also allow xlsx or csv.

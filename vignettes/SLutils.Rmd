@@ -1,0 +1,936 @@
+---
+title: "SLutils demonstration"
+author: "Stéphane Laurent"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    fig_caption: no
+    number_sections: yes
+    toc: yes
+vignette: >
+  %\VignetteIndexEntry{SLutils demonstration}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+knitr::opts_chunk$set(collapse=TRUE, fig.align="center", cache=FALSE)
+fscale <- 1
+if(!dir.exists("./imgs")){
+  dir.create("./imgs")
+}
+```
+
+```{r packages, include=FALSE}
+library(SLutils)
+breakpoints <- SLutils::breakpoints
+library(magrittr)
+library(ggplot2)
+library(car)
+library(jsonlite)
+library(microbenchmark)
+```
+
+# Utilities for numbers in character strings
+
+## Extraction of numbers from character strings
+
+- The `numextract` function extracts the first number occuring in a character string:
+
+```{r}
+numextract("I am born in 1975 and I am 41 years old.")
+```
+
+It can be applied to a vector:
+
+```{r}
+numextract(c("3.5 ml", "7 ml"))
+```
+
+It can be applied to a factor as well:
+
+```{r}
+numextract(factor(c("Batch 101", "Batch 217")))
+```
+
+- The `numsextract` function extracts all numbers in a character string:
+
+```{r}
+numsextract("I am born in 1975 and I am 41 years old.")
+```
+
+## Convert from character to numeric 
+
+- The `Numerize` function converts a character string to numeric mode if possible:
+
+```{r, error=TRUE}
+Numerize(" -3.5")
+Numerize("Batch 101")
+```
+
+It can be applied to a vector:
+
+```{r, error=TRUE}
+Numerize(c("-3.5", "42"))
+Numerize(c("-3.5", "fourty-two"))
+```
+
+And it can be applied to a factor as well:
+
+```{r}
+Numerize(factor(c("00", "01")))
+```
+
+
+## Numerize a dataframe 
+
+We will use the following dataframe to illustrate the `Numerize.df` function:
+
+```{r}
+dat <- data.frame(u = 1:4,
+                  v = c(2.5, -4, 0, 10),
+                  w = c("a","b","c","d"),
+                  x = factor(c("100", "100", "101", "110")),
+                  y = factor(c("Test A", "Test A", "Test B", "Test C")),
+                  z = c("1", "1.4", "-3", "   0"),
+                  stringsAsFactors = FALSE)
+str(dat)
+```
+
+- The `Numerize.df` function numerizes the columns of a dataframe when possible:
+
+```{r}
+Numerize.df(dat) %>% str
+```
+
+- You can exclude the factors:
+
+```{r}
+Numerize.df(dat, factors=FALSE) %>% str
+```
+
+- You can select the columns you want to numerize:
+
+```{r}
+Numerize.df(dat, colnames=c("x", "z")) %>% str
+```
+
+
+## Checking numerizability
+
+- The `isNumerizable` function checks whether a vector or a factor is numerizable:
+
+```{r}
+isNumerizable(c("1.5", "  3.2 "))
+isNumerizable(factor(c("3.5", "4")))
+isNumerizable(c("100", "AAA"))
+```
+
+If the result is `TRUE`, the `Numerize` function can be successfully applied (***note:*** do not apply `as.numeric` to a factor!).
+
+- The `isNumerizable.df` function checks whether the columns of a dataframe are numerizable:
+
+```{r}
+dat <- data.frame(x = 1:4,
+                  y = c("a", "b", "c", "d"),
+                  z = c("1", "1.4", "-3", "   0"))
+isNumerizable.df(dat)
+```
+
+
+- This function is used by the `coltypes` function: 
+
+```{r}
+coltypes(dat)
+```
+
+# Numbers utilities 
+
+- The `ndecimals` function returns the number of decimal digits of a number:
+
+```{r}
+ndecimals(13.451)
+ndecimals(2)
+ndecimals(pi)
+ndecimals(1.23e-20)
+```
+
+- The `nfloordigits` function returns the number of digits of the integer part of a number:
+
+```{r}
+nfloordigits(13.451)
+nfloordigits(2)
+nfloordigits(-43.4)
+nfloordigits(23.15e6)
+```
+
+- The `prettyNumber` formats a number to a specified number of total characters:
+
+```{r}
+prettyNumber(pi, digits=4)
+prettyNumber(123456789, digits=7)
+prettyNumber(12.5e9, digits=7)
+prettyNumber(0.00000012, digits=7)
+```
+
+- The `number2words` function convert numbers to their corresponding English words:
+
+```{r number2words}
+numbers2words(c(2, 34, 175))
+```
+
+
+# Reporting utilities
+
+- The `formatClatex` function formats a number for LaTeX, handling the scientific notation:
+
+```{r formatClatex}
+formatClatex(1.234567, digits=4)
+formatClatex(1.234567e-12, digits=4)
+```
+
+- The `numbers2words` function convert numbers to their corresponding English words:
+
+```{r}
+numbers2words(c(2, 17, 211))
+```
+
+- The `enumerate` function makes a sentence enumerating the elements of a vector:
+
+```{r}
+enumerate(letters[1:2])
+enumerate(letters[1:4])
+```
+
+
+
+# Files utilities
+
+- The `findFiles` function finds files before/after a given data with size lower/bigger than a given size. See `?findFiles`.
+
+
+# Dates utilities
+
+- The `is_date` function checks whether a vector has a date-like class.
+
+```{r}
+x <- Sys.Date()
+is_date(x)
+is_date(factor(x))
+x <- strftime(c("2016-06-21", "2016-11-22"), usetz=TRUE, tz="UTC")
+is_date(x)
+is_date(as.POSIXct(x, tz="UTC"))
+```
+
+- The `possibly_date` function checks whether a vector or a factor can be converted to an object having a date-like class.
+
+```{r}
+x <- Sys.Date()
+possibly_date(x)
+x <- strftime(c("2016-06-21", "2016-11-22"), usetz=TRUE, tz="UTC")
+possibly_date(x)
+possibly_date(factor(x))
+possibly_date(as.POSIXct(x, tz="UTC"))
+x <- Sys.time()
+possibly_date(x)
+x <- "2016/11/11"
+possibly_date(x)
+x <- "a"
+possibly_date(x)
+x <- "11nov1980"
+possibly_date(x)
+```
+
+Note that `possibly_date("11nov1980")` is `FALSE`. However, `"11nov1980"` can be converted to a date if one specifies the appropriate format, if the locale time is appropriate too:
+
+```{r}
+as.Date("11nov1980", "%d%b%Y") # gives NA in some locales
+Sys.setlocale("LC_TIME", "C")
+as.Date("11nov1980", "%d%b%Y")
+```
+
+- The `guessDataFormat` guesses the date format of a vector:
+
+```{r}
+guessDateFormat(c("2016/06/21", "2016/11/22"))
+guessDateFormat("11nov1980")
+```
+
+It returns `FALSE` if it fails to guess a date:
+
+```{r}
+guessDateFormat("abc")
+```
+
+You can also require the dates instead of the format:
+
+```{r}
+guessDateFormat(c("2016/06/21", "2016/11/22"), returnDates=TRUE)
+```
+
+
+# XLSX utilities
+
+## Deprecated functions
+
+- Write the `iris` and `mtcars` dataframes in a XLSX file:
+
+```{r, eval=FALSE}
+XLSXwrite0(iris, mtcars, file="test.xlsx",
+          author="John Doe", title="MyTitle")
+```
+
+- See also `?XLSXwrite` to write a worksheet (deprecate in favor of 
+`writeXLSX`), and `?XLSXread`, `?XLSXcomments`, `?XLSXsheets`, `?XLSXtypes` to read from worksheets (deprecated in favor of 
+`hreadXLSX` and `treadXLSX`). 
+
+## Write a XLSX file from a flat list, allowing different types within columns, based on `openxlsx`
+
+This is achieved by the function `writeXLSX`. 
+
+*This function is useful only if you want to write a table which has some columns containing cells of different types.* Otherwise, you can simply use `openxlsx::writeXLSX`. 
+
+To do so, the data must be given as a "flat list" (*I don't know a better name for that*).
+
+This is particularly useful when the original data are given as a JSON string. This is a "flat list":
+
+```{r}
+( flatlist <- jsonlite::fromJSON("{\"COL1\":[1,null,2],\"COL2\":[\"c\",4],\"Date\":[\"2017-02-12\"]}", simplifyVector=FALSE) )
+```
+
+The function `writeXLSX` also allows to include some comments in the worksheet. 
+
+```{r}
+comments <- jsonlite::fromJSON("{\"COL1\":[\"hello\",null,null],\"COL2\":[null,\"bye\"],\"Date\":[null]}", simplifyVector=FALSE)
+```
+
+Now write:
+
+```{r}
+xlsx <- tempfile(fileext=".xlsx")
+writeXLSX(flatlist, file=xlsx, comments=comments, sheetname="Sheet1")
+```
+
+We will see below that the worksheet has been written as expected. 
+
+## XLSX file to flat list or JSON string, based on `tidyxl`
+
+Consider the file created above, whose path is stored in the variable `xlsx`.
+
+```{r}
+sheet <- getExcelSheet(xlsx, sheet="Sheet1")
+sheetToJSON(sheet)
+```
+
+To get the flat list:
+
+```{r}
+treadXLSX(sheet)
+```
+
+
+## XLSX file to flat list or JSON string, based on the Haskell library `xlsx`
+
+```{r}
+hreadXLSX(xlsx, sheet="Sheet1", what="data", output="flatlist")
+
+hreadXLSX(xlsx, sheet="Sheet1", what="data", output="dataframe")
+
+hreadXLSX(xlsx, sheet="Sheet1", what="data", output="JSON")
+```
+
+To read the cell values and the comments, use the option `what="data,comments"` (see `?hreadXLSX` for more info):
+
+```{r}
+hreadXLSX(xlsx, sheet="Sheet1", what="data,comments", output="flatlist")
+
+hreadXLSX(xlsx, sheet="Sheet1", what="data,comments", output="JSON")
+```
+
+## Benchmarks 
+
+- Benchmark for a small worksheet:
+
+```{r}
+library(microbenchmark)
+microbenchmark(
+  tidyxl = treadXLSX(getExcelSheet(xlsx, sheet="Sheet1")),
+  haskell = hreadXLSX(xlsx, sheet="Sheet1", what="data,comments,types", output="flatlist"),
+  times=20
+)
+microbenchmark(
+  tidyxl = sheetToJSON(getExcelSheet(xlsx, sheet="Sheet1")),
+  haskell = hreadXLSX(xlsx, sheet="Sheet1", what="data,comments,types", output="JSON"),
+  times=20
+)
+```
+
+
+- Benchmark for a bigger worksheet:
+
+```{r}
+xlsx <- system.file("extdata", "datasets.xlsx", package="readxl")
+library(microbenchmark)
+microbenchmark(
+  tidyxl = treadXLSX(getExcelSheet(xlsx, sheet="iris")),
+  haskell = hreadXLSX(xlsx, sheet="iris", what="data,comments,types", output="flatlist"),
+  times=20
+)
+microbenchmark(
+  tidyxl = sheetToJSON(getExcelSheet(xlsx, sheet="iris")),
+  haskell = hreadXLSX(xlsx, sheet="iris", what="data,comments,types", output="JSON"),
+  times=20
+)
+```
+
+# Stats utilities
+
+## Type II ANOVA table 
+
+- Get type II ANOVA table for a model like `lm(y~a+b+a:b)`:
+
+```{r}
+fit <- lm(yield ~ block + N + block:N, data=npk)
+typeIItable(fit)
+```
+
+This function does not require any external package. The output is the same as the one of the `car::Anova` function:
+
+```{r, eval=require(car)}
+car::Anova(fit)
+```
+
+## Noncentral Student t distribution 
+
+According to the R documentation of the Student t distribution (`?TDist`), the functions `pt` and `qt` do not return a correct value when `abs(ncp)>37.62`, where `ncp` is the non-centrality parameter. 
+
+The functions `pT` and `qT` in the `SLutils` package achieve a better performance. Actually they are copied from the `EnvStats` package.
+
+```{r}
+ncp <- 40
+pt(q=30, df=10, ncp=ncp)
+pT(q=30, df=10, ncp=ncp)
+qt(p=0.5, df=10, ncp=ncp)
+qT(p=0.5, df=10, ncp=ncp)
+```
+These values returned by `pT` and `qT` coincide with the ones calculated by [the keisan online calculator](http://keisan.casio.com/exec/system/1180573219) as well as the ones calculated by WolframAlpha ([pT value](https://www.wolframalpha.com/input/?i=N%5BCDF%5BNoncentralStudentTDistribution%5B10,40%5D,30%5D%5D) and [qT value](https://www.wolframalpha.com/input/?i=N%5BinverseCDF%5BNoncentralStudentTDistribution%5B10,40%5D,0.5%5D%5D)).
+
+
+## The Dunnett distribution
+
+Let $(X_1, \ldots, X_k)$ be a $k$-dimensional random vector following 
+a centered [multivariate Student distribution](https://en.wikipedia.org/wiki/Multivariate_t-distribution) 
+with $\nu$ 
+degrees of freedom and scale (covariance) matrix 
+$$
+\begin{pmatrix}
+1 & \rho & \cdots & \rho \\
+\rho & \ddots & \ddots & \vdots \\
+\vdots & \ddots & \ddots & \rho \\
+\rho & \cdots & \rho & 1
+\end{pmatrix}.
+$$
+We denote by $S_k(\nu, \rho)$ this distribution.
+
+- The *two-tailed Dunnett distribution* is the distribution of 
+$\max_{1 \leqslant i \leqslant k} X_i$. 
+
+- The *one-tailed Dunnett distribution* is the distribution of 
+$\max_{1 \leqslant i \leqslant k} |X_i|$. 
+
+We respectively denote by $D_2(k, \nu, \rho)$ and $D_1(k, \nu, \rho)$ 
+these distributions. 
+
+The cumulative distribution function, the quantile function and 
+the sampling function of these 
+distributions are implemented under the names 
+`pDunnett`, `qDunnett` and `rDunnett`, respectively. 
+
+
+## Application: exact prediction intervals 
+
+Consider an actual sample 
+$y_1, \ldots, y_n \sim_{\text{iid}} {\cal N}(\mu,\sigma^2)$ 
+and $k$ future observations 
+$y^\ast_{1}, \ldots, y^\ast_k \sim_{\text{iid}} {\cal N}(\mu,\sigma^2)$.
+
+Then it can be shown that
+$$
+\left(\frac{y^\ast_1 - \bar y}{\sqrt{1+\frac{1}{n}}sd(y)}, 
+\ldots, 
+\frac{y^\ast_k - \bar y}{\sqrt{1+\frac{1}{n}}sd(y)}\right) \sim S_k(n-1, \rho)
+$$
+with $\rho = \dfrac{1}{n+1}$.  
+
+Therefore, setting 
+$t_i = \frac{y^\ast_i - \bar y}{\sqrt{1+\frac{1}{n}}sd(y)}$,  
+if $q_1$ and $q_2$ are the $100(1-\alpha)\%$-quantiles of 
+$D_1(k, n-1, \rho)$ and $D_2(k, n-1, \rho)$ respectively, then 
+we are $100(1-\alpha)\%$-confident that, *simultaneously* for 
+all $i \in \{1, \ldots, k\}$, the inequalities 
+$t_i \leqslant q_1$ and $|t_i| \leqslant q_2$ hold true. 
+
+The first inequality yields an upper $100(1-\alpha)\%$-prediction interval 
+for the $k$ future observations, while the second one 
+yields a two-sided $100(1-\alpha)\%$-prediction interval. 
+
+More precisely, the upper prediction bound given by the first inequality is 
+$$
+\bar y + q_1\sqrt{1+\frac{1}{n}}sd(y)
+$$
+and the two prediction bounds given by the second inequality are 
+$$
+\bar y \pm q_2\sqrt{1+\frac{1}{n}}sd(y).
+$$
+
+The factors $q_1\sqrt{1+\frac{1}{n}}$ and $q_2\sqrt{1+\frac{1}{n}}$ are 
+returned by the function `predictionFactor` with option `method="exact"`, 
+and the prediction intervals are returned by the function 
+`predictionInterval` with option `method="exact"`.
+
+There is also the function `CoverageEPI`, which estimates the coverage probability of these prediction intervals with the help of simulations. 
+
+
+# Breakpoints 
+
+## The example dataset 
+
+```{r headdat}
+data(dataBP)
+head(dataBP)
+```
+
+```{r bpggplot1, fig.width=fscale*6, fig.height=fscale*3.5}
+gg <- ggplot(dataBP, aes(x=date, y=y)) + geom_point()
+gg
+```
+
+
+## Constant piecewise model 
+
+### Find a single breakpoint - constant piecewise
+
+```{r deg0_onebp}
+# find breakpoint
+bp <- breakpoints(y~1, dat=dataBP, onebreak=TRUE)			
+# number of breakpoints (here, 0 or 1)
+( n.bp <- length(bp$breakpoint) )
+paste("Breakpoint:", dataBP$date[bp$breakpoint])
+```
+
+Show the result on a graphic:
+
+```{r bpggplot_deg0_onebp, fig.width=fscale*6, fig.height=fscale*3.5}
+breakdates <- c(dataBP$date[1], dataBP$date[bp$breakpoint], tail(dataBP$date,1))
+x <- breakdates[1:2]
+xend <- breakdates[2:3]
+y <- yend <- bp$coef[1:2]
+segs <- data.frame(x,xend,y,yend)
+gg + 
+  geom_segment(data=data.frame(mygroup=c(NA,NA)),
+               aes(x=segs[,1], y=segs[,3], xend=segs[,2], yend=segs[,4]), 
+               colour="red", linetype="solid", size=1.2) 
+```
+
+
+### Find several breakpoints - constant piecewise
+
+When looking for several breakpoints:
+
+* set the option `onebreak=FALSE` 
+* set the maximal number of breakpoints with the option `nbreaks.max`
+* or set `nbreaks.max=NULL` to find the optimal number of breakpoints
+
+```{r deg0_severalbp}
+# find breakpoints
+bp <- breakpoints(y~1, dat=dataBP, onebreak=FALSE, nbreaks.max=NULL)			
+# number of breakpoints
+( n.bp <- length(bp$breakpoint) )
+paste("Breakpoints:", paste(dataBP$date[bp$breakpoint], collapse=", "))
+```
+
+Show the result on a graphic:
+
+```{r bpggplot_deg0_severalbp, fig.width=fscale*6, fig.height=fscale*3.5}
+breakdates <- c(dataBP$date[1], dataBP$date[bp$breakpoint], tail(dataBP$date,1))
+x <- breakdates[1:(n.bp+1)]
+xend <- breakdates[1+1:(n.bp+1)]
+y <- yend <- bp$coef[1:(n.bp+1)]
+segs <- data.frame(x,xend,y,yend)
+gg + 
+  geom_segment(data=data.frame(mygroup=rep(NA, n.bp+1)),
+               aes(x=segs[,1], y=segs[,3], xend=segs[,2], yend=segs[,4]), 
+               colour="red", linetype="solid", size=1.2) 
+```
+
+
+## Linear piecewise model 
+
+### Find a single breakpoint - linear piecewise
+
+```{r deg1_onebp}
+dataBP <- transform(dataBP, dateID=as.integer(date))
+# find breakpoint
+bp <- breakpoints(y~dateID, dat=dataBP, onebreak=TRUE)			
+# number of breakpoints (here, 0 or 1)
+( n.bp <- length(bp$breakpoint) )
+paste("Breakpoint:", dataBP$date[bp$breakpoint])
+```
+
+Show the result on a graphic:
+
+```{r bpggplot_deg1_onebp, fig.width=fscale*6, fig.height=fscale*3.5}
+breakdates <- c(dataBP$date[1], dataBP$date[bp$breakpoint], tail(dataBP$date,1))
+nbreakdates <- c(dataBP$dateID[1], dataBP$dateID[bp$breakpoint], tail(dataBP$dateID,1))
+a <- bp$coef[,1]
+b <- bp$coef[,2]
+x <- breakdates[1:2]
+xend <- breakdates[2:3]
+y <- a+b*nbreakdates[1:2]
+yend <- a+b*nbreakdates[2:3]
+segs <- data.frame(x,xend,y,yend)
+gg + 
+  geom_segment(data=data.frame(mygroup=rep(NA,2)),
+               aes(x=segs[,1], y=segs[,3], xend=segs[,2], yend=segs[,4]), 
+               colour="red", linetype="solid", size=1.2) 
+```
+
+
+### Find several breakpoints - linear piecewise
+
+```{r deg1_severalbp}
+# find breakpoints
+bp <- breakpoints(y~dateID, dat=dataBP, onebreak=FALSE, nbreaks.max=NULL)			
+# number of breakpoints 
+( n.bp <- length(bp$breakpoint) )
+paste("Breakpoints:", paste(dataBP$date[bp$breakpoint], collapse=", "))
+```
+
+Show the result on a graphic:
+
+```{r bpggplot_deg1_severalbp, fig.width=fscale*6, fig.height=fscale*3.5}
+breakdates <- c(dataBP$date[1], dataBP$date[bp$breakpoint], tail(dataBP$date,1))
+nbreakdates <- c(dataBP$dateID[1], dataBP$dateID[bp$breakpoint],  tail(dataBP$dateID,1))
+a <- bp$coef[,1]
+b <- bp$coef[,2]
+x <- breakdates[1:(n.bp+1)]
+xend <- breakdates[1+1:(n.bp+1)]
+y <- a+b*nbreakdates[1:(n.bp+1)]
+yend <- a+b*nbreakdates[1+1:(n.bp+1)]
+segs <- data.frame(x,xend,y,yend)
+gg + 
+  geom_segment(data=data.frame(mygroup=rep(NA,n.bp+1)),
+               aes(x=segs[,1], y=segs[,3], xend=segs[,2], yend=segs[,4]), 
+               colour="red", linetype="solid", size=1.2) 
+```
+
+
+
+# CRAN-like repo utilities 
+
+- Initialize a repo with `makeRepo`:
+
+```{r, eval=FALSE}
+makeRepo("U:/CRANrepo", name="myCRANrepo")
+```
+
+This creates the following structure:
+
+```
+U:\CRANREPO
+│   myCRANrepo.name
+│
+├───bin
+│   ├───macosx
+│   │   ├───contrib
+│   │   │   └───3.3
+│   │   ├───leopard
+│   │   │   └───contrib
+│   │   │       └───3.3
+│   │   └───mavericks
+│   │       └───contrib
+│   │           └───3.3
+│   └───windows
+│       └───contrib
+│           └───3.3
+│               ├───Archive
+│               └───Meta
+└───src
+    └───contrib
+        ├───Archive
+        └───Meta
+```
+
+- Add one package in the repo:
+
+```{r, eval=FALSE}
+addPackage("U:/CRANrepo", "mypackage.tar.gz")
+```
+
+If there are several versions of this package in the repo, the older ones will be archived.
+
+- You can also add some packages (tarballs) by hand in the `src/contrib` folder, and then use `writePACKAGESandArchive` to update the repo. 
+
+
+# Strings utilities
+
+- The `string2letters` function separates the characters of a string:
+
+```{r}
+string2letters("hello")
+```
+
+- The `charseq` function generates consecutive integers with a given number of digits:
+
+```{r}
+charseq(12)
+```
+
+- It can be used with a prefix and a suffix:
+
+```{r}
+charseq(12, prefix="graph", suffix=".png")
+```
+
+
+# Matrices utilities 
+
+- Generates blocks diagonal matrices:
+
+```{r}
+M1 <- diag(2); M2 <- matrix(2, nrow=3, ncol=3)
+blockdiag(M1,M2)
+blockdiag_list(list(M1,M2,M1))
+```
+
+# The `Sys.which2` function 
+
+This function is like `Sys.which` but it finds an executable without including the Windows system directories before `PATH`.
+
+It is useful for example on Windows when you want to find the executable `convert` of ImageMagick, because `Sys.which` first looks in the Windows system directories and finds another executable:
+
+```{r, eval=FALSE}
+Sys.which("convert")
+##                              convert 
+## "C:\\Windows\\system32\\convert.exe" 
+```
+
+
+# Conversion of pdf/ps figures to png/gif 
+
+- The `pspdfimg` function converts a ps or pdf figure to a png or gif figure. It requires ImageMagick and Ghostscript. 
+This is the example given in `?pspdfimg`:
+
+```{r Rplot01}
+# generates a pdf figure
+pdf("imgs/Rplot01.pdf", width=5, height=5)
+curve(x^2, from=-1, to=1, axes=FALSE, ylab=NA, col="red")
+xlabs_at <- seq(-1, 1, by=0.5)
+axis(1, at=xlabs_at)
+ylabs_at <- seq(0, 1, by=0.2)
+axis(2, at=ylabs_at)
+text(0.65, 0.8, expression(f(x)==x^2))
+dev.off()
+# converts to png
+pspdf2img("imgs/Rplot01.pdf", format="png", moreopts="-trim -resize 30%")
+```
+
+It generates this png image:
+
+![](imgs/Rplot01.png)
+
+Of course this example is an artifical one: there's no need to firstly generate a pdf figure to get this png figure. But go to the next section now.
+
+
+# Conversion of R plots to TikZ figures
+
+## A basic plot example
+
+```{r Rplot02, message=FALSE}
+# first write a function creating the plot
+plotCode <- function(){
+  curve(x^2, from=-1, to=1, axes=FALSE, xlab="$x$", ylab=NA, col="red")
+  xlabs_at <- seq(-1, 1, by=0.5)
+  axis(1, at=xlabs_at, labels=dollarify()(xlabs_at))
+  ylabs_at <- seq(0, 1, by=0.2)
+  axis(2, at=ylabs_at, labels=dollarify()(ylabs_at))
+  text(0.65, 0.8, "$f(x)=x\\\\^2$") # note the four backslashes!
+  return(invisible())
+}
+# create the LaTeX file with default preamble for pdflatex
+plot2tikz(plotCode, filename="Rplot02", outdir="./imgs", 
+          compile=TRUE, clean=TRUE,
+          documentDeclaration ="\\documentclass[12pt]{standalone}\n",
+          width=5, height=5)
+```
+
+Now you get a TikZ figure in the file `Rplot02.pdf`. 
+You can convert it to png as before:
+
+```{r convertRplot02}
+pspdf2img("imgs/Rplot02.pdf", format="png", moreopts="-trim -resize 30%")
+```
+
+And you get this png image:
+
+![](imgs/Rplot02.png)
+
+Note that we used the `dollarify` function in the code above, to surround the axes labels between `$`'s. This function is provided by `SLutils`. It is more useful for `ggplot2` graphics.
+
+
+## A `ggplot2` example 
+
+Now let's create a TikZ figure from a `ggplot2` plot. We use the `datify` function to get beautiful dates (see `?datify`).
+
+- First we create the `ggplot2` plot, with LaTeX axes labels and titles:
+
+```{r}
+library(ggplot2)
+set.seed(666)
+DF <- data.frame(date = rep(Sys.Date()+1:10, 2),
+                 y = rpois(20, 50),
+                 group = gl(2, 10, labels=c("A","B")))
+base_size <- 20
+gg <- ggplot(DF, aes(x=date, y=y)) +
+  geom_point(size=3, color="white", shape=21, fill="green") +
+  scale_y_continuous(labels=dollarify()) +
+  scale_x_date(date_breaks="2 days", labels=datify()) +
+  # the labeller below is a trick to control the width of the strips
+  # see http://stackoverflow.com/questions/17825201/is-there-a-way-to-increase-the-height-of-the-strip-text-bar-in-a-facet
+  facet_grid(group ~ ., labeller=labeller(group=setNames(paste0("\ngroup ", levels(DF$group), "\n"), levels(DF$group)))) +
+  xlab("\\large\\textsf{date}") +
+  ylab("\\Large $y$") +
+  theme(panel.background = element_rect(fill="black", color=NA),
+        panel.grid.major = element_line(color="blue4", size=1, linetype="dashed"),
+        panel.grid.minor = element_line(color="blue", size=0.5, linetype="dashed"),
+        panel.border = element_rect(fill=NA, color="red"),
+        panel.spacing = unit(1, "lines"),
+        strip.background = element_rect(fill="grey30", color="grey10"),
+        strip.text = element_text(color="white", size=base_size, lineheight=0.5),
+        plot.background = element_rect(color="black", fill="black"),
+        plot.title = element_text(size=base_size*1.2, color="white"),
+        plot.margin = margin(t=1, r=1, b=1, l=1, "lines"),
+        axis.line = element_blank(),
+        axis.text.x = element_text(face="bold", angle=45, vjust=0.5, size=base_size*0.6, color="white", lineheight=0.9),
+        axis.text.y = element_text(face="bold", size=base_size*0.8, color="white", lineheight=0.9, hjust=1),
+        axis.ticks = element_line(colour = "white", size=0.2),
+        axis.title.x = element_text(size = base_size*0.9, color="white", vjust=0),
+        axis.title.y = element_text(face="bold", size=base_size*0.8, color="white", angle=90, vjust=1),
+        axis.ticks.length = unit(0.3, "lines"),
+        axis.text = element_text(margin=unit(0.5, "lines"))
+  )
+```
+
+```{r Rplot03, message=FALSE, warning=FALSE}
+plot2tikz(function() print(gg), 
+          filename="Rplot03", outdir="./imgs", 
+          compile=TRUE, clean=TRUE, overwrite = TRUE,
+          packages=c("\\usepackage[ddmmyyyy]{datetime}\n"),
+          documentDeclaration ="\\documentclass[12pt]{standalone}\n",
+          width=7, height=5)
+```
+
+Now we get a TikZ figure in the file `Rplot03.pdf`. 
+We convert it to png:
+
+```{r convertRplot03}
+pspdf2img("imgs/Rplot03.pdf", format="png", moreopts="-resize 30%")
+```
+
+And we get this png image:
+
+![](imgs/Rplot03.png)
+
+
+# Scianimator animations 
+
+See the example:
+
+```{r, eval=FALSE}
+browseURL(system.file("scianimator", "example", "scianim_example.html", package="SLutils"))
+```
+
+This example was created by the following code:
+
+```{r, eval=FALSE}
+# taken from ?tikz2png
+plotCode <- function(n){
+  curve(x^n, from=-1, to=1, axes=FALSE,
+        ylab=NA, xlab="$x$",
+        main=sprintf("$f(x)=x\\\\^%s$", n))
+  xlabs_at <- seq(-1, 1, by=0.5)
+  axis(1, at=xlabs_at, labels=dollarify()(xlabs_at))
+  ylabs_at <- seq(ifelse(n%%2==0, 0, -1), 1, by=0.2)
+  axis(2, at=ylabs_at, labels=dollarify()(ylabs_at))
+  return(invisible())
+}
+# write images
+imgs <- tikz2png(plotCode, 1:10, bg="white")
+# create scianimation
+scianim("scianim_example", imgs=imgs, theme="dark")
+# remove files
+file.remove(list.files(pattern="^Rplot"))
+```
+
+
+
+# Shiny apps
+
+## Reshape (pivot) a table
+
+- Run `shinyReshape(dat)` to reshape a dataframe `dat`, or run `shinyReshape()` to upload a table and reshape it.
+
+
+```{r, include=FALSE}
+knitr::knit_exit()
+```
+
+# XXX
+
+Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+
+- Never uses retina figures
+- Has a smaller default figure size
+- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+
+## Vignette Info
+
+Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+
+## Styles
+
+The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+
+    output: 
+      rmarkdown::html_vignette:
+        css: mystyles.css
+
+## Figures
+
+The figure sizes have been customised so that you can easily put two images side-by-side. 
+
+```{r, fig.show='hold'}
+plot(1:10)
+plot(10:1)
+```
+
+You can enable figure captions by `fig_caption: yes` in YAML:
+
+    output:
+      rmarkdown::html_vignette:
+        fig_caption: yes
+
+Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+
+## More Examples
+
+You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+
+```{r, echo=FALSE, results='asis'}
+knitr::kable(head(mtcars, 10))
+```
+
+Also a quote using `>`:
+
+> "He who gives up [code] safety for [code] speed deserves neither."
+([via](https://twitter.com/hadleywickham/status/504368538874703872))

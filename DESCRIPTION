@@ -1,0 +1,42 @@
+Package: SLutils
+Title: Some Utilities
+Version: 1.6.1.9999
+Date: 2017-03-11
+Authors@R: person("Stéphane", "Laurent", email = "stephane.x.laurent@gsk.com", role = c("aut", "cre"))
+Maintainer: Stéphane Laurent <stephane.x.laurent@gsk.com>
+Description: Miscellanous utilities.
+Depends:
+    R (>= 3.2.0)
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+Imports:
+    stringr,
+    purrr,
+    utils,
+    withr,
+    tools,
+    stats,
+    jsonlite,
+    devtools,
+    tikzDevice,
+    grDevices,
+    strucchange,
+    shiny,
+    readxl (> 0.1.1),
+    base64enc,
+    shinythemes,
+    openxlsx,
+    tidyxl (> 0.2.1),
+    data.table (> 1.10.3),
+    knitr,
+    mnormt
+RoxygenNote: 6.0.1
+Suggests: testthat,
+    magrittr,
+    EnvStats
+VignetteBuilder: knitr,
+    ggplot2,
+    car,
+    jsonlite,
+    microbenchmark

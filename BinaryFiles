@@ -1,0 +1,15 @@
+inst/bin/windows/XLSXwrite.exe
+inst/bin/windows/json2xlsx.exe
+inst/bin/windows/xlsx2json.exe
+inst/bin/windows/xlsx2json2.exe
+inst/bin/windows/getXLSXcomments.exe
+inst/bin/windows/getXLSXtypes.exe
+inst/bin/windows/getXLSXsheets.exe
+inst/bin/unix/json2xlsx
+inst/bin/unix/xlsx2json
+inst/bin/unix/getXLSXcomments
+inst/bin/unix/getXLSXtypes
+inst/bin/unix/getXLSXsheets
+inst/libs/x64/xlsx2jsonR.dll
+inst/libs/i386/xlsx2jsonR.dll
+inst/libs/xlsx2jsonR.so

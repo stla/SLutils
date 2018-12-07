@@ -1,0 +1,141 @@
+1.6.1.9999
+ o shinyReshape: "Remove zeros" in context menu
+ o fix in hotType(): replace "numeric" with "mynumeric"
+ o TODO: function Coverage - aussi tester meanprediction
+ o TODO : switch part of vignette related to ghostscript
+ o TODO: fix xlsx2json when firstRow > last row of the sheet
+  - fait avec tryCatch en attendant
+ o TODO: j'ai changé le message "Available sheet" => modifier les tests
+  sinon, ne pas le modifier mais tester qu'il ne contient pas de "[" DONE
+
+1.6.1
+ o fix in repoStatus: recursive=FALSE for type=="source"
+ o cleaner functions pDunnett and qDunnett
+ o new function rDunnett
+ o new options firstRow and lastRow in hreadXLSX
+ o new function CoverageEPI
+
+1.6.0
+ o OS-dependent test write base64
+ o Dunnett distribution
+ o Dunnett's exact prediction intervals
+
+1.5.0
+ o new function treadXLSX
+ o fixes in xlsx2json (date formats, duplicated headers)
+ o new option `oldeRversions` in addPackages
+ o shinyReshape now uses hreadXLSX
+ o shinyReshape: disable `Set this row as headers` when duplicates
+ o shinyReshape: styling, logo
+
+1.4.13
+ o Fix in addPackages: do not archive binaries
+ o new function hreadXLSX
+
+1.4.12
+ o fixed XLSXread with comments=TRUE (error in Haskell code)
+ o shinyReshape: search feature
+ o new function sheetToJSON, using the tidyxl package
+ o rename xlsx test files
+ o tests sheetToJSON
+ o vignette: document sheetToJSON and writeXLSX
+
+1.4.11
+ o shinyReshape: option sortIndicator
+ o shinyReshape: improved the log-changes when afterChange
+
+1.4.10
+ o shinyReshape: MAXWIDTH and MAXHEIGHT depending on device
+ o shinyReshape: fix trim for column headers
+ o shinyReshape: replace dots with "&#46;" for datatables
+ o shinyReshape: fix when "variable column" is cleared, by replacing "select2:select" with "change"
+ o shinyReshape: datatables options for pdf export
+
+1.4.9
+ o shinyReshape: new feature "switch column type" in context menu (with a tooltip)
+ o shinyReshape: new checkbox "Show row headers"
+
+1.4.8
+ o Test the function typeIItable
+ o shinyReshape: reshaped tables now displayed as datatables
+ o shinyReshape: trim and clean \r, \n, \t and multiple spaces in the table (this fixes some bugs)
+ o shinyReshape: new features in context menu: "keep these columns", "keep these rows", "set this row as headers"
+ o shinyReshape: save table as TXT (tab-separated)
+ o shinyReshape: modified the handsontable source code for custom rendering of "numeric"columns
+ o new function writeXLSX, using the openxlsx package
+ o shinyReshape now uses writeXLSX to save the table
+ o new options `firstRow` and `lastRow` in XLSXread, XLSXcomments and XLSXtypes
+
+1.4.7
+ o "shQuote" for XLSX readers/writer
+ o Unix executables
+ o shinyReshape: custom type "mynumeric"
+ o shinyReshape: fixed comments
+
+1.4.6
+ o guessDates function: option for suppressing messages
+ o shinyTable: increase maximum size of uploaded file
+ o shinyTable: spinner
+ o "header" option in XLSXread and XLSXcomments
+ o shinyTable: checkbox "Import comments"
+ o fix in shinyTable: update selectors when a column is added
+ o shinyTable: changed numeric renderer to numbro with format 0.[00...]
+ o shinyTable: fix allowClear for "#colindex"
+ o new function XLSXtypes
+ o shinyTable renamed to shinyReshape
+
+1.4.5
+ o shinyTable: "add column" feature in the context menu
+ o Tests for the Haskell xlsx writer/reader
+ o More options for the Haskell xlsx writer/reader
+ o shinyTable: comments in an uploaded XLSX are now set in the handsontable
+ o shinyTable: comments in the handsontable are saved in XLSX
+
+1.4.4
+ o shinyTable: automatic height and width
+ o shinyTable: record changes
+ o shinyTable: "remove column" and "save" features in the context menu
+
+1.4.3
+ o Fix in shinyTable: remove the hidden download tags when file uploaded
+ o Fix in shinyTable: allow clear the "variable column"
+ o Fix in shinyTable: convert file names to lower-case to get the extension
+ o Fix in shinyTable: remove empty columns imported by read_excel
+
+1.4.2
+ o Fix in shinyTable: clean the tidy tables when file uploaded
+
+1.4.1
+ o Allow an empty "variable column" in shiny app "Table"
+ o Internal environment .SLenv to deal with shiny apps
+
+1.4.0
+ o Shiny app "Table"
+
+1.3.0
+ o breakpoints
+
+1.2.3
+ o fixed XLSXwrite when there are missing values
+ o TikZ utilities
+ o converter ps/pdf to png/gif
+ o scianimator animations
+ o Block diagonal matrices
+
+1.2.2
+ o Noncentral Student t distribution
+
+1.2.1
+ o XLSXwrite now handles bigger dataframes
+ o Date utilities
+
+1.2.0
+ o CRAN-like repo utilities
+ o file utilities
+ o write XLSX
+
+1.1.0
+ o Now the package uses the *purrr* package.
+
+1.0.0
+ o First version.

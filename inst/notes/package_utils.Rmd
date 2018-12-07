@@ -1,0 +1,119 @@
+---
+title: "Notes on the package utilities"
+author: "Stéphane Laurent"
+date: "27 février 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, eval=FALSE}
+devtools::install_version("SLutils", version="1.4.11", dependencies=FALSE, build_vignettes=FALSE, repos=c(SL = "file:///Y:/7. STAT ANALYSES and IA/71- IA/LocalApps/CRANlike-SL"), type="source")
+```
+
+- Latest version (see below)
+
+```{r, eval=FALSE}
+devtools::install_version("SLutils", version="1.4.12", dependencies=FALSE, build_vignettes=FALSE, repos=c(SL = "file:Y:///7. STAT ANALYSES and IA/71- IA/LocalApps/CRANlike-SL"), type="source")
+Warning: package incorrect 'Y:/7.'
+Warning: package incorrect 'STAT'
+Warning: package incorrect 'ANALYSES'
+Warning: package incorrect 'and'
+Warning: package incorrect 'IA/71-'
+Warning: package incorrect 'IA/LocalApps/CRANlike-SL/src/contrib/SLutils_1.4.12.tar.gz'
+Erreur : ERREUR : aucun package spécifié
+```
+
+____
+
+-	For type=”source”: `devtools::install_version` runs its specific machinery when the version is an old one.
+
+-	For type=”source” and the latest version, it runs the classical install.packages; the issue with the white spaces comes from install.packages.
+
+-	For type=”binary”, I have to modify my code and this will be ok for any version.
+
+___
+
+my issue (see also my modifs in packrat): <https://github.com/hadley/devtools/issues/1426> 
+
+## Solve the white-spaces issue 
+
+`shortPathName` ? yes (see below)
+
+Only problem: the slashes... (?)
+
+## Path given by network drive name
+
+```{r}
+p <- "//Rixdsntp001/cmcstat/7. STAT ANALYSES and IA/71- IA/LocalApps/CRANlike-SL"
+shortPathName(p)
+"\\\\Rixdsntp001\\cmcstat\\7~1.STA\\71-IA~1\\LOCALA~1\\CRANLI~1"
+p <- "//Rixdsntp001/cmcstat/7~1.STA/71-IA~1/LOCALA~1/CRANLI~1"
+```
+
+```{r, eval=FALSE}
+repopath <- "//Rixdsntp001/cmcstat/7. STAT ANALYSES and IA/71- IA/LocalApps/CRANlike-SL"
+makeRepo(repopath, name="SL")
+# this works (except the end message "Refer to this repo with:  c(SL = "file:///\\Rixdsntp001/cmcstat/7. STAT ANALYSES and IA/71- IA/LocalApps/CRANlike-SL") or c(SL = "file:\\Rixdsntp001/cmcstat/7. STAT ANALYSES and IA/71- IA/LocalApps/CRANlike-SL")"):
+# no, issue tools::write_PACKAGES because of winslash="/" in normalizePath of tools:::file_path_as_absolute
+# pourtant setwd(normalizePath(p, "/")) fonctionne ! 
+# TODO essaye avec le shortNamePath 
+repopath <- "Y:/7. STAT ANALYSES and IA/71- IA/LocalApps/CRANlike-SL"
+addPackage(repopath, "../SLutils_1.4.11.tar.gz", binary=TRUE, testbuild=FALSE, oldeRversion=-1, multiarch=FALSE)
+# this:
+writePACKAGESandArchive(repopath)
+```
+
+
+## Repo "path" given by network drive name:
+
+```{r}
+repo <- c(SL="file:////RIXDSNTP001/CMCSTAT/7. STAT ANALYSES and IA/71- IA/LocalApps/CRANlike-SL")
+repo <- c(SL="file:////Rixdsntp001/cmcstat/7. STAT ANALYSES and IA/71- IA/LocalApps/CRANlike-SL")
+repo <- c(SL="file:////Rixdsntp001/cmcstat/7~1.STA/71-IA~1/LOCALA~1/CRANLI~1")
+```
+
+## install with dependencies 
+
+```{r, eval=FALSE}
+repo <- c(SL = "file:///U:/Data/CRANlike-SL")
+repo <- c(SL="file:////Rixdsntp001/cmcstat/7~1.STA/71-IA~1/LOCALA~1/CRANLI~1")
+repos <- c(repo, getOption("repos"))
+install.packages("totalerror", repos=repos, type="binary", dependencies=TRUE)
+
+```
+
+
+## `devtools:::package_find_repo`
+
+This finds only the old versions.
+
+```{r}
+repo <- c(SL="file:///U:/Data/CRANlike-SL/")
+devtools:::package_find_repo("SLutils", repo)
+```
+
+et ça marche avec `devtools::install_version`
+
+____
+
+```{r, eval=FALSE}
+repo <- c(SL="file:////RIXDSNTP001/CMCSTAT/7. STAT ANALYSES and IA/71- IA/LocalApps/CRANlike-SL")
+repo <- c(SL="file:///U:/Data/CRANlike-SL/")
+contriburl <- contrib.url(repo, "source")
+available <- available.packages(contriburl) 
+# voir si install.packages("SLutils", repos=NULL, contriburl=contriburl)
+#   marche pour le network repo
+contriburl <- contrib.url(repo, "binary")
+available <- available.packages(contriburl)
+# je pense (je sais pas en fait) que même si je ne déplace pas les 
+#   fichiers bin je dois créer l'archive ?..
+#   NON car même sans l'archive il trouve !!! 
+# regarde ce que  ça donne avec un repo CRAN, as-tu les plusieurs versions ?
+```
+
+## `miniCRAN` 
+
+Les fonctions de miniCRAN ne marchent pas => faire les modifs pour qu'elles marchent ? 

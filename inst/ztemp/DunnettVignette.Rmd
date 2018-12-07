@@ -1,0 +1,84 @@
+---
+title: "Dunnet Distribution"
+author: "Stéphane Laurent"
+date: "8 mars 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Dunnett's distribution
+
+Let $(X_1, \ldots, X_k)$ be a $k$-dimensional random vector following 
+a centered [multivariate Student distribution](https://en.wikipedia.org/wiki/Multivariate_t-distribution) 
+with $\nu$ 
+degrees of freedom and scale (covariance) matrix 
+$$
+\begin{pmatrix}
+1 & \rho & \cdots & \rho \\
+\rho & \ddots & \ddots & \vdots \\
+\vdots & \ddots & \ddots & \rho \\
+\rho & \cdots & \rho & 1
+\end{pmatrix}.
+$$
+We denote by $S_k(\nu, \rho)$ this distribution.
+
+- The *two-tailed Dunnett distribution* is the distribution of 
+$\max_{1 \leqslant i \leqslant k} X_i$. 
+
+- The *one-tailed Dunnett distribution* is the distribution of 
+$\max_{1 \leqslant i \leqslant k} |X_i|$. 
+
+We respectively denote by $D_2(k, \nu, \rho)$ and $D_1(k, \nu, \rho)$ 
+these distributions. 
+
+The cumulative distribution function, the quantile function and 
+the sampling function of these 
+distributions are implemented under the names 
+`pDunnett`, `qDunnett` and `rDunnett`, respectively. 
+
+
+## Application: exact prediction intervals 
+
+Consider an actual sample 
+$y_1, \ldots, y_n \sim_{\text{iid}} {\cal N}(\mu,\sigma^2)$ 
+and $k$ future observations 
+$y^\ast_{1}, \ldots, y^\ast_k \sim_{\text{iid}} {\cal N}(\mu,\sigma^2)$.
+
+Then it can be shown that
+$$
+\left(\frac{y^\ast_1 - \bar y}{\sqrt{1+\frac{1}{n}}sd(y)}, 
+\ldots, 
+\frac{y^\ast_k - \bar y}{\sqrt{1+\frac{1}{n}}sd(y)}\right) \sim S_k(n-1, \rho)
+$$
+with $\rho = \dfrac{1}{n+1}$.  
+
+Therefore, setting 
+$t_i = \frac{y^\ast_i - \bar y}{\sqrt{1+\frac{1}{n}}sd(y)}$,  
+if $q_1$ and $q_2$ are the $100(1-\alpha)\%$-quantiles of 
+$D_1(k, n-1, \rho)$ and $D_2(k, n-1, \rho)$ respectively, then 
+we are $100(1-\alpha)\%$-confident that, *simultaneously* for 
+all $i \in \{1, \ldots, k\}$, the inequalities 
+$t_i \leqslant q_1$ and $|t_i| \leqslant q_2$ hold true. 
+
+The first inequality yields an upper $100(1-\alpha)\%$-prediction interval 
+for the $k$ future observations, while the second one 
+yields a two-sided $100(1-\alpha)\%$-prediction interval. 
+
+More precisely, the upper prediction bound given by the first inequality is 
+$$
+\bar y + q_1\sqrt{1+\frac{1}{n}}sd(y)
+$$
+and the two prediction bounds given by the second inequality are 
+$$
+\bar y \pm q_2\sqrt{1+\frac{1}{n}}sd(y).
+$$
+
+The factors $q_1\sqrt{1+\frac{1}{n}}$ and $q_2\sqrt{1+\frac{1}{n}}$ are 
+returned by the function `predictionFactor` with option `method="exact"`, 
+and the prediction intervals are returned by the function 
+`predictionInterval` with option `method="exact"`.
+
+There is also the function `CoverageEPI`, which estimates the coverage probability of these prediction intervals with the help of simulations. 
