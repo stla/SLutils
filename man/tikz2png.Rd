@@ -4,8 +4,8 @@
 \alias{tikz2png}
 \title{Generate LaTeX figures in png or gif format}
 \usage{
-tikz2png(code, nplots, prefix = "Rplot", format = "png", outdir = getwd(),
-  folder = "assets/images/", ...)
+tikz2png(code, nplots, prefix = "Rplot", format = "png",
+  outdir = getwd(), folder = "assets/images/", ...)
 }
 \arguments{
 \item{code}{a function with an integer argument, generating the plot}

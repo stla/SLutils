@@ -9,3 +9,6 @@ hotColumnsFromTypes(dftypes)
 \arguments{
 \item{dftypes}{dataframe as returned by \code{\link{XLSXtypes}}}
 }
+\description{
+Create handsontable columns setting from given types
+}

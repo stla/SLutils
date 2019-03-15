@@ -6,3 +6,6 @@
 \usage{
 hotColumns(dat)
 }
+\description{
+Create columns setting for handsontable
+}

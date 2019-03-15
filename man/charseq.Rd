@@ -4,7 +4,8 @@
 \alias{charseq}
 \title{Generates 001, 002, ...}
 \usage{
-charseq(I, prefix = NULL, suffix = NULL, ndigits = floor(log10(I)) + 1)
+charseq(I, prefix = NULL, suffix = NULL, ndigits = floor(log10(I)) +
+  1)
 }
 \arguments{
 \item{I}{integer}

@@ -6,3 +6,6 @@
 \usage{
 hotType(col)
 }
+\description{
+Find the type for handsontable
+}

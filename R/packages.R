@@ -301,7 +301,7 @@ makeArchiveRDS <- function(repopath, type="source"){
 #' @return Nothing, just prints some messages.
 #' @export
 #' @seealso \code{\link{writePACKAGESandArchive}} to scan a repo and update the repo.
-#' @importFrom devtools build find_rtools
+#' @importFrom pkgbuild build find_rtools
 #' @importFrom stringr str_detect str_split_fixed
 #' @importFrom withr with_dir
 #' @importFrom tools write_PACKAGES
@@ -374,8 +374,8 @@ addPackage <- function(repopath, bundle, binary=TRUE, oldeRversion=-1L, overwrit
     message("Testing whether the package can be build...")
     suppressWarnings(dir.create(tmpDirBuild <- file.path(tmpDir, "testbuild")))
     ### je peux mettre args="--vanilla" ? non, unknown option, bizarre
-    invisible(devtools::find_rtools())
-    invisible(withr::with_dir(tmpDir, devtools::build(pkg, path=tmpDirBuild, args=multiarch)))
+    invisible(pkgbuild::find_rtools())
+    invisible(withr::with_dir(tmpDir, pkgbuild::build(pkg, path=tmpDirBuild, args=multiarch)))
   }
   # copy to repo
   invisible(file.copy(
@@ -408,8 +408,8 @@ addPackage <- function(repopath, bundle, binary=TRUE, oldeRversion=-1L, overwrit
     pkgZip <- file.path(binPaths$win.binary, sub("\\.tar\\..*$", "\\1.zip", basename(pkgTargz)))
     if(file.exists(pkgZip)) file.remove(pkgZip)
     message("Building binary source.")
-    invisible(devtools::find_rtools())
-    pkgZip <- withr::with_dir(tmpDir, devtools::build(pkg, binary=TRUE, args=multiarch))
+    invisible(pkgbuild::find_rtools())
+    pkgZip <- withr::with_dir(tmpDir, pkgbuild::build(pkg, binary=TRUE, args=multiarch))
     invisible(file.copy(from = pkgZip, to = binPaths$win.binary))
     ### v 1.4.13 : COMMENTED BELOW ##
     # # archive package

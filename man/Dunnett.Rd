@@ -8,8 +8,8 @@
 \title{Cumulative distribution function and quantile function of the
 Dunnett distribution}
 \usage{
-qDunnett(p, df, k, rho, tailed = c("one", "two"), tol = .Machine$double.eps,
-  maxiter = 5000)
+qDunnett(p, df, k, rho, tailed = c("one", "two"),
+  tol = .Machine$double.eps, maxiter = 5000)
 
 pDunnett(q, df, k, rho, tailed = c("one", "two"))
 

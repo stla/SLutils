@@ -6,3 +6,6 @@
 \usage{
 hdatify(dat)
 }
+\description{
+Format dates for handsontable
+}

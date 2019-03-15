@@ -6,11 +6,13 @@
 \alias{qT}
 \title{Cumulative distribution function and quantile function of the Student t distribution}
 \usage{
-pT(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE, max.terms = 1e+05,
-  num.terms.inc = 20, rel.tol = .Machine$double.eps)
+pT(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
+  max.terms = 1e+05, num.terms.inc = 20,
+  rel.tol = .Machine$double.eps)
 
-qT(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE, max.terms = 1e+05,
-  num.terms.inc = 20, rel.tol = .Machine$double.eps)
+qT(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
+  max.terms = 1e+05, num.terms.inc = 20,
+  rel.tol = .Machine$double.eps)
 }
 \arguments{
 \item{q}{vector of quantiles}

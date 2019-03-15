@@ -4,8 +4,8 @@
 \alias{plot2tikz}
 \title{Convert a plot to a TikZ figure}
 \usage{
-plot2tikz(code, filename = "Rplot", outdir = getwd(), overwrite = FALSE,
-  format = "pdf", lua = FALSE, packages = NULL,
+plot2tikz(code, filename = "Rplot", outdir = getwd(),
+  overwrite = FALSE, format = "pdf", lua = FALSE, packages = NULL,
   addDefaultTikZoptions = TRUE, compile = TRUE, clean = FALSE, ...)
 }
 \arguments{

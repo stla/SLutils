@@ -6,3 +6,6 @@
 \usage{
 shinyReshape(dat = NULL)
 }
+\description{
+Shiny Reshape app
+}
