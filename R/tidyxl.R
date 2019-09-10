@@ -31,8 +31,8 @@ cellValue <- function(values, c, r){
 #' sheet[.(2,4), .(data_type, character, comment)]
 getExcelSheet <- function(xlsxFile, sheet=1L){
   DT <- subset(
-    as.data.table(tidy_xlsx(xlsxFile, sheets=sheet)$data[[1L]]),
-    !is.na(content) | !is.na(comment),
+    as.data.table(xlsx_cells(xlsxFile, sheets=sheet)),#$data[[1L]]),
+    !is_blank | !is.na(comment),
     select = c("col", "row", "data_type", "logical", "numeric", "date", "character", "comment")
   )
   setkeyv(DT, c("col", "row"))
